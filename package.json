@@ -1,0 +1,25 @@
+{
+  "name": "testing-reacting-stripe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "client": "cd client && npm run start",
+    "api": "cd api && npm run start",
+    "dev": "concurrently \"npm run client\" \"npm run api\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pranayaryal/testing-reacting-stripe-js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pranayaryal/testing-reacting-stripe-js/issues"
+  },
+  "homepage": "https://github.com/pranayaryal/testing-reacting-stripe-js#readme",
+  "dependencies": {
+    "concurrently": "^5.1.0"
+  }
+}
