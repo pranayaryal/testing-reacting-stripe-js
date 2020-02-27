@@ -32,3 +32,8 @@ export const StyledButton = styled.button`
   border-radius: 2px;
   margin-top: 1.5em;
 `
+
+export const StyledMessage = styled.p`
+  color: red;
+  margin-left: 0;
+`

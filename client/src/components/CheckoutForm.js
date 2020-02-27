@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-import { StyledForm, StyledLabel, StyledAmountInput, StyledButton } from './StyledForm';
+import { 
+  StyledForm, 
+  StyledLabel,
+  StyledAmountInput,
+  StyledButton,
+  StyledMessage
+} from './StyledForm';
 import {
   CardElement,
   Elements,
@@ -10,58 +16,69 @@ import {
 
 } from '@stripe/react-stripe-js';
 
+
 const CheckoutForm = props => {
 
-  const [ amount, setAmount ] = useState(0);
-  
+  const [amount, setAmount] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [ message, setMessage ] = useState('');
+  const payload = {
+    paymentAmount: amount
+  };
+
+  useEffect(() => {
+    setClientSecret('');
+    const getClientSecret = async () => {
+      await axios.post('http://localhost:9000/api/intent', payload)
+        .then(res => {
+          setClientSecret(res.data.client_secret);
+        }
+        )
+        .catch(error => {
+          setClientSecret('');
+          console.log(`[Error] - ${error}`);
+        });
+
+    };
+    getClientSecret();
+  }, [amount]);
+
+
+
   const stripe = useStripe();
   const elements = useElements();
 
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const payload = {
-      paymentAmount: amount
+    setClientSecret('');
+
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement),
+        billing_details: {
+          name: 'Pranay Aryals'
+        }
+      }
+    });
+
+    if (result.error) {
+      setMessage(result.error.message);
+    } else {
+      if (result.paymentIntent.status === 'succeeded') {
+        setMessage('yay your payment went through!');
+      }
     }
 
-    await axios.post('http://localhost:9000/api/intent', payload)
-      .then( response => console.log(response))
-      .catch( error => console.log(`[Error] - ${error}`));
-
-    // const result = await stripe.confirmCardPayment('{}', {
-    //   payment_method: {
-    //     card: elements.getElement(CardElement),
-    //     billing_details: {
-    //       name: 'Jenny Rosen'
-    //     }
-    //   }
-    // })
-
-    // const {error, paymentMethod} = await stripe.createPaymentMethod({
-    //   type: 'card',
-    //   card: elements.getElement(CardElement)
-    // });
-
-    // if (error) {
-    //   console.log('[Error]', error);
-
-    // } else {
-    //   console.log('[PaymentMethod]', paymentMethod);
-    // }
-    // if (result.error){
-    //   console.log(result.error.message);
-    // } else {
-    //   if (result.paymentIntent.status === 'succeeded') {
-    //     console.log('yay succeeded');
-    //   }
-    // }
   }
 
 
   return (
     <StyledForm onSubmit={handleSubmit}>
+      { message && <StyledMessage>{message}</StyledMessage>}
       <StyledLabel>Amount</StyledLabel>
-      <StyledAmountInput type="text" name="amount" value={amount} onChange={e => setAmount(e.target.value)}/>
-      <CardElement 
+      <StyledAmountInput type="text" name="amount" value={amount} onChange={e => setAmount(e.target.value)} />
+      <CardElement
         options={{
           style: {
             base: {
